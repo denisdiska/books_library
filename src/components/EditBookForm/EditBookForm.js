@@ -1,52 +1,86 @@
 import React, { useState } from 'react'
+
 import { useDispatch, useSelector } from 'react-redux'
 import { Redirect, useHistory } from 'react-router-dom'
+import { Input, Button, Form, Space } from 'antd'
+
 import { editBook } from '../../store/thunk'
+
+const layout = {
+  labelCol: {
+    span: 8,
+  },
+  wrapperCol: {
+    span: 8,
+  },
+}
+const tailLayout = {
+  wrapperCol: {
+    offset: 8,
+    span: 16,
+  },
+}
 
 export default function EditBookForm({ editData }) {
   const dispatch = useDispatch()
   const history = useHistory()
+  const [form] = Form.useForm()
   const [editing, setEditing] = useState(false)
   const { books } = useSelector(({ books }) => ({
     books: books.myBooks.list,
   }))
-
-  let date = new Date()
-  const dateTimeFormat = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'numeric', day: '2-digit' })
-  const [{ value: month }, , { value: day }, , { value: year }] = dateTimeFormat.formatToParts(date)
-  const initialFormState = { author: editData.author, publish_date: `${day}-${month}-${year}`, title: editData.title }
-  const [book, setBook] = useState(initialFormState)
 
   const routeChange = () => {
     let path = `/`
     history.push(path)
   }
 
-  const handleInputChange = event => {
-    const { name, value } = event.currentTarget
-    setBook({ ...book, [name]: value })
+  const onFinish = values => {
+    const date = new Date()
+    const publish_date = date.toISOString().slice(0, 10)
+    const editedBook = books.map(el =>
+      editData.title === el.title ? { ...values, publish_date, id: editData.id } : el
+    )
+
+    dispatch(editBook(editedBook))
+
+    form.resetFields()
+    setEditing(true)
   }
 
-  const handleSubmit = event => {
-    event.preventDefault()
-    if (!book.title || !book.author) return
-
-    dispatch(editBook(books.map(el => (initialFormState.title === el.title ? book : el))))
-
-    setEditing(true)
+  const onFinishFailed = errorInfo => {
+    console.log('Failed:', errorInfo)
   }
 
   return (
     <div>
-      <form onSubmit={handleSubmit}>
-        <label>Book title</label>
-        <input type="text" name="title" value={book.title} onChange={handleInputChange} />
-        <label>Author</label>
-        <input type="text" name="author" value={book.author} onChange={handleInputChange} />
-        <button>edit book</button>
-      </form>
+      <Space size={-8} wrap>
+        <Button type="primary" onClick={routeChange}>
+          back
+        </Button>
+      </Space>
+      <Form
+        {...layout}
+        name="addNewBook"
+        onFinish={onFinish}
+        onFinishFailed={onFinishFailed}
+        form={form}
+        initialValues={{ ...editData }}
+      >
+        <Form.Item label="Book title" name="title">
+          <Input />
+        </Form.Item>
+        <Form.Item label="Author" name="author">
+          <Input />
+        </Form.Item>
+
+        <Form.Item {...tailLayout}>
+          <Button type="primary" htmlType="submit">
+            Submit
+          </Button>
+        </Form.Item>
+      </Form>
       {editing && <Redirect to="/login" />}
-      <button onClick={routeChange}>to books</button>
     </div>
   )
 }

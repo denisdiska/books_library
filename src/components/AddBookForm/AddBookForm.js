@@ -1,39 +1,63 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useDispatch } from 'react-redux'
-
+import { Input, Button, Form } from 'antd'
 import { addBook } from '../../store/thunk'
+
+const layout = {
+  labelCol: {
+    span: 8,
+  },
+  wrapperCol: {
+    span: 8,
+  },
+}
+const tailLayout = {
+  wrapperCol: {
+    offset: 8,
+    span: 16,
+  },
+}
 
 export default function AddBookForm() {
   const dispatch = useDispatch()
+  const [form] = Form.useForm()
 
-  let date = new Date()
-  let dateNow = date.toISOString().slice(0, 10)
-
-  const initialFormState = { author: '', publish_date: `${dateNow}`, title: '' }
-
-  const [book, setBook] = useState(initialFormState)
-
-  const handleInputChange = event => {
-    const { name, value } = event.currentTarget
-    setBook({ ...book, [name]: value })
+  const onFinish = values => {
+    console.log(values)
+    if (values.title && values.author) {
+      const id = Date.now()
+      const date = new Date()
+      const publish_date = date.toISOString().slice(0, 10)
+      dispatch(addBook({ ...values, publish_date, id }))
+      form.resetFields()
+    }
   }
 
-  const handleSubmit = event => {
-    event.preventDefault()
-    if (!book.title || !book.author) return
-
-    dispatch(addBook(book))
-
-    setBook(initialFormState)
+  const onFinishFailed = errorInfo => {
+    console.log('Failed:', errorInfo)
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label>Book title</label>
-      <input type="text" name="title" value={book.title} onChange={handleInputChange} />
-      <label>Author</label>
-      <input type="text" name="author" value={book.author} onChange={handleInputChange} />
-      <button>Add new book</button>
-    </form>
+    <Form
+      {...layout}
+      name="addNewBook"
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+      form={form}
+      style={{ marginTop: '16px' }}
+    >
+      <Form.Item label="Book title" name="title">
+        <Input />
+      </Form.Item>
+      <Form.Item label="Author" name="author">
+        <Input />
+      </Form.Item>
+
+      <Form.Item {...tailLayout}>
+        <Button type="primary" htmlType="submit">
+          Submit
+        </Button>
+      </Form.Item>
+    </Form>
   )
 }
