@@ -6,8 +6,6 @@ import { configureStore } from './store/configureStore'
 
 import { Dashboard, EditPage } from './pages'
 
-import './App.css'
-
 const store = configureStore()
 
 function App() {

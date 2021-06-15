@@ -1,7 +1,6 @@
 import Actions from '../rootActions'
 
 export const addBook = item => {
-  // переделать функцию, убрать async или типа того
   return async dispatch => {
     try {
       dispatch(Actions.books.addNewBook(item))

@@ -3,12 +3,10 @@ import { createActionCreators, createReducerFunction, ImmerReducer } from 'immer
 import { PROGRESS_TYPE } from '../../constants/progressType'
 
 export class booksReducer extends ImmerReducer {
-  // addNewBook(item, persistantState) {
-  //   this.draftState.myBooks.list.unshift(item)
-  // }
   addNewBook(item) {
+    const id = Date.now()
     this.draftState.myBooks = {
-      list: [item, ...this.draftState.myBooks.list],
+      list: [{ ...item, id }, ...this.draftState.myBooks.list],
       progress: PROGRESS_TYPE.SUCCESS,
     }
   }
